@@ -1,0 +1,5 @@
+---
+- include_tasks: epel.yml
+- include_tasks: update_cache.yml
+- include_tasks: apps.yml
+- include_tasks: timezone.yml

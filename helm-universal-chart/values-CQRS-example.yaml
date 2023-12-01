@@ -1,0 +1,152 @@
+#Common
+Common:
+  name: service-name
+  namespace: project-name-prod
+
+#Deployment
+
+Deployment:
+  type: "CQ-Pair"
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/scheme: http
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '5067'
+    co.elastic.logs/enabled: "true"
+    co.elastic.logs/json.keys_under_root: "true"
+    co.elastic.logs/json.overwrite_keys: "true"
+    co.elastic.logs/json.message_key: "message"
+  replicaCount: 2
+  ImagePullKey: registrykey
+  securityContext:
+    runAsUser: 1000
+  containers:
+    name: service-name
+    command: "base64 --decode keytab_encoded > /tmp/krb.keytab && dotnet Some.App.dll"
+    env:
+    - name: ASPNETCORE_ENVIRONMENT
+      value: Production
+    image: "harbor.company.com/project-name/service-name:latest"
+    volumeMounts:
+      mountPath: /app/
+      name: appsettings-config
+    livenessProbe:
+      exec:
+        command:
+          - curl
+          - '--fail'
+          - localhost:8080/healthcheck/heartbeat
+      initialDelaySeconds: 15
+      timeoutSeconds: 2
+      periodSeconds: 30
+      successThreshold: 1
+      failureThreshold: 3
+    startupProbe:
+      exec:
+        command:
+          - curl
+          - '--fail'
+          - localhost:8080/healthcheck/heartbeat
+      initialDelaySeconds: 10
+      timeoutSeconds: 2
+      periodSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      exec:
+        command:
+          - curl
+          - '--fail'
+          - localhost:8080/healthcheck/heartbeat
+      initialDelaySeconds: 5
+      timeoutSeconds: 2
+      periodSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+  volumes:
+    name: appsettings-config
+    secret:
+      defaultMode: 420
+  Command:
+    replicaCount: 1
+    containers:
+      resources:
+        limits:
+          memory: "2000Mi"
+          cpu: "2"
+        requests:
+          memory: "400Mi"
+          cpu: 500m
+  Query:
+    replicaCount: 3
+    containers:
+      resources:
+        limits:
+          memory: 400Mi
+          cpu: "1"
+        requests:
+          memory: 200Mi
+          cpu: "400m"
+  
+#Service
+Service:
+  Ingress: 
+    enabled: false
+  ports: 
+    port: 8080
+    name: service-name
+  Command:
+    rules:
+      host: service-name-command-prod.ingress.clstr-name.company.com
+      http:
+        paths:
+          - backend:
+              serviceName: service-name-command
+              servicePort: 8080
+  Query:
+    rules:
+      host: service-name-query-prod.ingress.clstr-name.company.com
+      http:
+        paths:
+          - backend:
+              serviceName: service-name-query
+              servicePort: 8080
+
+ConfigMap:
+  enabled: false
+
+Secret:
+  enabled: true
+  Command:
+    appsettings: "vault:project-name/data/prod/service-name#appsettings-command"
+  Query:
+    appsettings: "vault:project-name/data/prod/service-name#appsettings-query"
+  annotations:
+    vault.security.banzaicloud.io/vault-addr: https://vault.company.com/
+    vault.security.banzaicloud.io/vault-agent: 'false'
+    vault.security.banzaicloud.io/vault-path: kubernetes__clstr-name
+    vault.security.banzaicloud.io/vault-role: project-name__prod
+    vault.security.banzaicloud.io/vault-serviceaccount: default
+    vault.security.banzaicloud.io/vault-skip-verify: 'true'
+
+ExtraConfigMap:
+ enabled: false
+
+ExtraSecret:
+ enabled: true
+ MountData:
+  - mountPath: /app/keytab_encoded
+    name: service-name-krb-secret
+    subPath: keytab_encoded
+ name: service-name-krb-secret
+ defaultMode: 420
+ annotations:
+  vault.security.banzaicloud.io/vault-addr: https://vault.company.com/
+  vault.security.banzaicloud.io/vault-agent: 'false'
+  vault.security.banzaicloud.io/vault-path: kubernetes__clstr-name
+  vault.security.banzaicloud.io/vault-role: project-name__prod
+  vault.security.banzaicloud.io/vault-serviceaccount: default
+  vault.security.banzaicloud.io/vault-skip-verify: 'true'
+ data:
+  key: "keytab_encoded"
+  value: "vault:project-name/data/prod/service-name#keytab_encoded"

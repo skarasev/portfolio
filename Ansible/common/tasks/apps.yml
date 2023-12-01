@@ -1,0 +1,14 @@
+---
+- name: Install apps
+  dnf: 
+    name: ['mc', 
+           'htop', 
+           'nano', 
+           'telnet', 
+           'net-tools', 
+           'wget', 
+           'jq', 
+           'nmap-ncat', 
+           'chrony'
+          ]
+    state: latest

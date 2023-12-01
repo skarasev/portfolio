@@ -1,0 +1,51 @@
+node {
+    withEnv([
+        'NAME_SERVICE=service-name',
+        'ENV_NAME=development',
+        'REPOSITORY_URL=git@gitlab.company.com:project/Microservices/OcelotApi.git',
+        'REPOSITORY_BRANCH=*/master',
+        'REGISTRY=https://docker.company.com:5000',
+        'ANSIBLE_HOST=10.10.14.45',
+        'ANSIBLE_USER=root',
+        'ANSIBLE_PATH=/etc/ansible/project-apps',
+        'VERSION=m1.0.',
+        'TELEGRAM_CHAT_ID=-415274771'
+    ]) {
+        try{
+            def dockerBuild
+            stage('Clone repository') {
+                checkout([
+                    $class: 'GitSCM', 
+                    branches: [[name: REPOSITORY_BRANCH]],
+                    doGenerateSubmoduleConfigurations: false, 
+                    extensions: [],
+                    submoduleCfg: [], 
+                    userRemoteConfigs:
+                    [[credentialsId: 'gitlab-ssh-key',
+                    url: REPOSITORY_URL]]])
+                currentBuild.displayName = "${VERSION}${env.BUILD_ID}, \"${sh (script: 'git log -1 --pretty=%B ${GIT_COMMIT}', returnStdout: true).trim()}\""
+            }
+            stage('Build image') {
+                dockerBuild = docker.build("${NAME_SERVICE}:${VERSION}${env.BUILD_ID}", "--network=host .")
+            }
+            stage('Push image to registry') {
+                docker.withRegistry('https://docker.company.com:5000') {
+                    dockerBuild.push()
+                }
+            }
+            stage('Deploy ocelot-first-api') {
+                    sh """ ssh ${ANSIBLE_USER}@${ANSIBLE_HOST} 'ansible-playbook -i ${ANSIBLE_PATH}/inventory/project/project-${ENV_NAME}/hosts.yaml --diff ${ANSIBLE_PATH}/project-ocelot-first-api-deployment.yml --extra-vars "version=${VERSION}${env.BUILD_ID}"' """
+            }
+            stage('Deploy ocelot-second-api') {
+                    sh """ ssh ${ANSIBLE_USER}@${ANSIBLE_HOST} 'ansible-playbook -i ${ANSIBLE_PATH}/inventory/project/project-${ENV_NAME}/hosts.yaml --diff ${ANSIBLE_PATH}/project-ocelot-second-api-api-deployment.yml --extra-vars "version=${VERSION}${env.BUILD_ID}"' """
+            }
+            stage('Deploy ocelot-third-api') {
+                    sh """ ssh ${ANSIBLE_USER}@${ANSIBLE_HOST} 'ansible-playbook -i ${ANSIBLE_PATH}/inventory/project/project-${ENV_NAME}/hosts.yaml --diff ${ANSIBLE_PATH}/project-ocelot-third-api-api-deployment.yml --extra-vars "version=${VERSION}${env.BUILD_ID}"' """
+            }
+        }
+        catch (err){
+          sh """/etc/telegram/venv/bin/python3 /etc/telegram/bot.py Build Failed  ${NAME_SERVICE} ${TELEGRAM_CHAT_ID} ${env.BUILD_URL}console """
+          currentBuild.result = 'FAILURE'
+        }	
+    }	
+}

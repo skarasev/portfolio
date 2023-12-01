@@ -1,0 +1,128 @@
+{{ if eq .Values.Deployment.type "default" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.Common.name }}-deployment
+  namespace: {{ .Values.Common.namespace }}
+  labels:
+    app: {{ .Values.Common.name }} 
+spec:
+  replicas: {{ .Values.Deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.Common.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.Common.name }}
+      {{ with .Values.Deployment.annotations }}
+      annotations:
+        rolloutuid: {{ randAlphaNum 5 | quote }} {{- /*Generating random number to ensure diff between deployments and enforce pod recreation */}}
+        {{ toYaml . | nindent 8 }}
+      {{ end }}
+    spec:
+      securityContext:
+       runAsUser: {{ .Values.Deployment.securityContext.runAsUser }}
+      imagePullSecrets:
+      - name: {{ quote .Values.Deployment.ImagePullKey }}
+      containers:
+      - name: {{ .Values.Deployment.containers.name }}
+        ports:
+        - containerPort: {{ .Values.Service.ports.port }}
+        {{ with .Values.Deployment.containers.env }}
+        env:
+          {{ toYaml . | nindent 8 }}
+        {{ end }}
+        {{ if hasKey .Values.Deployment.containers "command" }}
+        command: 
+          - /bin/sh
+          - '-c'
+          - {{ .Values.Deployment.containers.command }}
+        {{ end }}
+        image: {{ .Values.Deployment.containers.image }}
+        resources:
+          limits:
+            memory: {{ .Values.Deployment.containers.resources.limits.memory }}
+            cpu: {{ .Values.Deployment.containers.resources.limits.cpu }}
+          requests:
+            memory: {{ .Values.Deployment.containers.resources.requests.memory }}
+            cpu: {{ .Values.Deployment.containers.resources.requests.cpu }}
+        {{ if hasKey $.Values.Deployment.containers "volumeMounts" }}
+        volumeMounts:
+        {{- range .Values.Deployment.containers.env }}
+          {{ if eq .name "ASPNETCORE_ENVIRONMENT"}}
+        - mountPath: {{ $.Values.Deployment.containers.volumeMounts.mountPath }}appsettings.{{ .value }}.json
+          subPath: appsettings.{{ .value }}.json
+          {{ else }}
+        - mountPath: {{ $.Values.Deployment.containers.volumeMounts.mountPath }}appsettings.Production.json
+          subPath: appsettings.Production.json
+          {{ end }}
+          {{ if $.Values.ConfigMap.enabled }}
+          name: appsettings-configmap
+          {{ else if $.Values.Secret.enabled }}
+          name: appsettings-secret
+          {{ end }}
+        {{ end }}
+        {{ if hasKey .Values "ExtraConfigMap"}}
+          {{ if .Values.ExtraConfigMap.enabled }}
+            {{ with .Values.ExtraConfigMap.MountData }}
+        {{ toYaml . | nindent 8 }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+        {{ if hasKey .Values "ExtraSecret"}}
+          {{ if .Values.ExtraSecret.enabled }}
+            {{ with .Values.ExtraSecret.MountData }}
+        {{ toYaml . | nindent 8 }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+        {{ end }}
+        {{ if hasKey .Values.Deployment.containers "startupProbe" }}
+        startupProbe:
+          {{ with .Values.Deployment.containers.startupProbe }}
+          {{ toYaml . | nindent 10 }}
+          {{ end }}
+        {{ end }}
+        {{ if hasKey .Values.Deployment.containers "livenessProbe" }}
+        livenessProbe:
+          {{ with .Values.Deployment.containers.livenessProbe }}
+          {{ toYaml . | nindent 10 }}
+          {{ end }}
+        {{ end }}
+        {{ if hasKey .Values.Deployment.containers "readinessProbe" }}  
+        readinessProbe:
+          {{ with .Values.Deployment.containers.readinessProbe }}
+          {{ toYaml . | nindent 10 }}
+          {{ end }}
+        {{ end }}
+      volumes:
+      {{ if .Values.ConfigMap.enabled }}
+      - name: appsettings-configmap
+        configMap:
+          defaultMode: {{ .Values.Deployment.volumes.configMap.defaultMode }}
+          name: {{ .Values.Common.name }}-appsettings-configmap
+      {{ end }}
+        {{ if hasKey .Values "ExtraConfigMap"}}
+          {{ if .Values.ExtraConfigMap.enabled }}
+      - name: {{ .Values.ExtraConfigMap.name }}
+        configMap:
+          defaultMode: {{ .Values.ExtraConfigMap.defaultMode }}
+          name: {{ .Values.ExtraConfigMap.name }}
+          {{ end }}
+        {{ end }}
+      {{ if .Values.Secret.enabled }}
+      - name: appsettings-secret
+        secret:
+          defaultMode: {{ .Values.Deployment.volumes.secret.defaultMode }}
+          secretName: {{ .Values.Common.name }}-secret
+      {{ end }}
+        {{ if hasKey .Values "ExtraSecret"}}
+          {{ if .Values.ExtraSecret.enabled }}
+      - name: {{ .Values.ExtraSecret.name }}
+        secret:
+          defaultMode: {{ .Values.ExtraSecret.defaultMode }}
+          secretName: {{ .Values.ExtraSecret.name }}
+        {{ end }}
+      {{ end }}
+{{ end }}

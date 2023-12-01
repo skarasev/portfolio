@@ -1,0 +1,110 @@
+#Common
+Common:
+  name: service-name
+  namespace: project-name-test
+
+#Deployment
+
+Deployment:
+  type: "default"
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/scheme: http
+    prometheus.io/scrape: 'true'
+    prometheus.io/port: '5067'
+    co.elastic.logs/enabled: "true"
+    co.elastic.logs/json.keys_under_root: "true"
+    co.elastic.logs/json.overwrite_keys: "true"
+    co.elastic.logs/json.message_key: "message"
+  replicaCount: 1
+  ImagePullKey: registrykey
+  securityContext:
+    runAsUser: 1000
+  containers:
+    name: service-name
+    env:
+    - name: ASPNETCORE_ENVIRONMENT
+      value: Development
+    volumeMounts:
+      mountPath: /app/
+    image: "harbor.company.com/service-name/service-name:latest"
+    resources:
+      limits:
+        memory: 300Mi
+        cpu: "0.3"
+      requests:
+        memory: 50Mi
+        cpu: "0.05"
+    livenessProbe:
+      exec:
+        command:
+          - curl
+          - '--fail'
+          - localhost:8080/healthcheck/serviceavailable
+      initialDelaySeconds: 4
+      timeoutSeconds: 2
+      periodSeconds: 30
+      successThreshold: 1
+      failureThreshold: 3
+    startupProbe:
+      exec:
+        command:
+          - curl
+          - '--fail'
+          - localhost:8080/healthcheck/serviceavailable
+      initialDelaySeconds: 10
+      timeoutSeconds: 2
+      periodSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      exec:
+        command:
+          - curl
+          - '--fail'
+          - localhost:8080/healthcheck/heartbeat
+      initialDelaySeconds: 5
+      timeoutSeconds: 2
+      periodSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+  volumes:
+    name: appsettings-config
+    secret:
+      defaultMode: 420
+  
+#Service
+Service:
+  Ingress:
+    enabled: true
+    annotations:
+  ports:
+    port: 8080
+    name: service-name
+  rules:
+    host: service-name-test.ingress.clstr-name.company.com
+    http:
+      paths:
+        - backend:
+            serviceName: service-name
+            servicePort: 8080
+
+
+ConfigMap:
+  enabled: false
+
+Secret:
+  enabled: true
+  annotations:
+    vault.security.banzaicloud.io/vault-addr: https://vault.company.com/
+    vault.security.banzaicloud.io/vault-agent: 'false'
+    vault.security.banzaicloud.io/vault-path: kubernetes__clstr-name
+    vault.security.banzaicloud.io/vault-role: project-name__test
+    vault.security.banzaicloud.io/vault-serviceaccount: default
+    vault.security.banzaicloud.io/vault-skip-verify: 'true'
+
+ExtraConfigMap:
+ enabled: false
+
+ExtraSecret:
+ enabled: false

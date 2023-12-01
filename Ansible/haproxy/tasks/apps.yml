@@ -1,0 +1,8 @@
+---
+- name: Install apps
+  yum: 
+    name: '{{ item }}'
+    state: latest
+  with_items:
+    - haproxy-1.5.18
+    - keepalived-1.3.5

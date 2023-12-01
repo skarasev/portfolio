@@ -1,0 +1,22 @@
+{{ if eq .Values.Deployment.type "default" }}
+{{ if .Values.ConfigMap.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: {{ .Values.Common.name }}-appsettings-configmap
+  namespace: {{ .Values.Common.namespace }}
+  {{ with .Values.ConfigMap.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{ end }}
+data:
+  {{- range .Values.Deployment.containers.env }}
+    {{ if eq .name "ASPNETCORE_ENVIRONMENT"}}
+  appsettings.{{ .value }}.json: |-
+    {{ else }}
+  appsettings.Production.json: |-
+    {{ end }}
+  {{ end }}
+    {{$.Files.Get  "appsettings-query.json" | nindent 6 | b64enc -}}
+{{ end }}
+{{ end }}

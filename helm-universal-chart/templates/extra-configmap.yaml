@@ -1,0 +1,25 @@
+{{ if .Values.ExtraConfigMap.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: {{ .Values.ExtraConfigMap.name }}
+  namespace: {{ .Values.Common.namespace }}
+  {{ with .Values.ExtraConfigMap.annotations }}
+  annotations:
+    {{ toYaml . | nindent 4 }}
+  {{ end }}
+{{ if hasKey .Values.ExtraConfigMap "data" }}
+data:
+    {{ if .Values.ExtraConfigMap.data.fromFile }}
+    {{ $filename := .Values.ExtraConfigMap.fileName }}
+  {{ .Values.ExtraConfigMap.data.key }}: |-
+    {{ $.Files.Get  $filename | nindent 6 | b64enc -}}
+    {{ else }}
+  {{ .Values.ExtraConfigMap.data.key }}: {{ .Values.ExtraConfigMap.data.value | b64enc }}
+    {{ end }}
+  {{ end }}
+  {{ if hasKey .Values.ExtraConfigMap "binaryData" }}
+binaryData:
+  {{ .Values.ExtraConfigMap.binaryData.key }}: {{ .Values.ExtraConfigMap.binaryData.value | b64enc }}
+  {{ end }}
+{{ end }}

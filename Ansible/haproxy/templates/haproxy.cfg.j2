@@ -1,0 +1,73 @@
+global
+  log         127.0.0.1 local2
+  chroot      /var/lib/haproxy
+  pidfile     /var/run/haproxy.pid
+  maxconn     4000
+  user        haproxy
+  group       haproxy
+  daemon
+	stats socket /var/run/haproxy.sock mode 777 level admin
+        stats timeout 2m
+		
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    30s
+    timeout queue           1m
+    timeout connect         30s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 30s
+    timeout check           30s
+    maxconn                 3000
+
+  listen stats :{{ ha_port }}
+  mode http
+  stats enable
+  stats realm Haproxy\ Statistics
+  stats uri /
+  stats auth {{login_ha}}:{{password_ha}}
+	
+
+############ FRONTEND ############
+
+frontend  all_http
+  bind {{groups['haproxy-cluster-ip'][0]}}:80
+  redirect scheme https code 301 if !{ ssl_fc }
+
+#frontend  public
+#  bind {{groups['haproxy-cluster-ip'][0]}}:4443
+#  mode tcp
+#  default_backend public
+
+frontend all
+  bind {{groups['haproxy-cluster-ip'][0]}}:443
+  mode tcp
+  option tcplog
+  default_backend all
+
+############ BACKEND ############
+
+#backend public
+#  mode tcp
+#  tcp-check connect
+#  balance roundrobin    
+#    {% for server in groups['kube-masters'] %}
+#    {% set haproxy_join = 'server ' + server + ' ' + hostvars[server]['ansible_ssh_host'] + ':443 weight 50 check' %}
+#    {{ haproxy_join }}
+#    {% endfor %}
+
+backend all
+  mode tcp
+  tcp-check connect
+  balance roundrobin
+    {% for server in groups['kube-masters'] %}
+    {% set haproxy_join = 'server ' + server + ' ' + hostvars[server]['ansible_ssh_host'] + ':443 weight 50 check' %}
+    {{ haproxy_join }}
+    {% endfor %}

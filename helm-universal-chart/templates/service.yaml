@@ -1,0 +1,16 @@
+{{ if eq .Values.Deployment.type "default" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.Common.name }}-service
+  namespace: {{ .Values.Common.namespace }}
+  labels:
+    app: {{ .Values.Common.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.Service.ports.port }}
+      name: {{ .Values.Service.ports.name }}
+  selector:
+    app: {{.Values.Common.name }}
+{{ end }}

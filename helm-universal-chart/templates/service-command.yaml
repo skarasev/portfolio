@@ -1,0 +1,16 @@
+{{ if eq .Values.Deployment.type "CQ-Pair" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.Common.name }}-command-service
+  namespace: {{ .Values.Common.namespace }}
+  labels:
+    app: {{ .Values.Common.name }}-command
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.Service.ports.port }}
+      name: {{ .Values.Service.ports.name }}
+  selector:
+    app: {{.Values.Common.name }}-command
+{{ end }}

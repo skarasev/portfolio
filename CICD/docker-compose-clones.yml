@@ -1,0 +1,165 @@
+version: '3.7'
+x-service: &default-service
+  image: "harbor.company.com/shop/backend:${ReleaseNumber}"
+  environment:
+    SETTINGS: "$SETTINGS"
+    DJANGO_SETTINGS_MODULE: abe.main.settings.swarm
+  deploy:
+    replicas: 1
+  networks:
+    - backend_net
+  secrets:
+    - "cert1.pem"
+    - "cert2.pem"
+
+services:
+  celery_beat: 
+    <<: *default-service
+    command: /bin/sh -c "celery beat -A abe.main.celery_app --loglevel=DEBUG --pidfile=/app/celerybeat.pid"
+  celery_uniqservice0: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice1: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice2: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice3: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice4: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice5: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice6: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice7: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice8: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice9: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice10: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice11: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice12: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice13: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice14:
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice15: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice16: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice17: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice18: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice19: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice20: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice21: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice22: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice23: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice24: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice25: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice26: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice27: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice28: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice29: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice30: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice31: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice32: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice33: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice34: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice35: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice36: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice37: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice38: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice39:
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice40: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice41: 
+    <<: *default-service
+    command: /bin/sh -c "celery worker -A abe.main.celery_app -Q uniqservice --someparam"
+  celery_uniqservice42: 
+    <<: *default-service
+  celery_flower: 
+    <<: *default-service
+    command: /bin/sh -c "celery flower -A abe.main.celery_app --url_prefix=flower --address=0.0.0.0 --port=7500"
+    ports:
+      - "7500:7500"
+  
+   
+
+secrets:
+  cert1.pem:
+    external: true
+  cert2.pem:
+    external: true
+
+
+networks:
+  backend_net:
+    external: true
+    name: backend_net

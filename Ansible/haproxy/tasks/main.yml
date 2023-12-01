@@ -1,0 +1,5 @@
+---
+- include_tasks: apps.yml
+- include_tasks: haproxy_settings.yml
+- include_tasks: firewalld.yml
+- include_tasks: hosts.yml

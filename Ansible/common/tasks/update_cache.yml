@@ -1,0 +1,6 @@
+---
+- name: Dnf Clean Cache
+  command: dnf clean all
+
+- name: Dnf List Packages
+  command: dnf list

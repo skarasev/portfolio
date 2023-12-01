@@ -1,0 +1,7 @@
+---
+- name: set timezone to Europe/Moscow
+  timezone:
+    name: Europe/Moscow
+- lineinfile:
+   path: /etc/chrony.conf
+   line: 'time.google.com'

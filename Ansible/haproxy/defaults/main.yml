@@ -1,0 +1,11 @@
+# haproxy settings
+ha_cluster_name: 'HAproxy'
+ha_port: '8080'
+rabbitMQ_port: '15672'
+login_ha: admin
+password_ha: admin
+AdminApi_port_backend: '30447'
+Backoffice_port_backend: '30448'
+Form_port_backend: '30444'
+Public_port_backend: '30443'
+Public_port_frontend: '4443'

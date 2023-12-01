@@ -1,0 +1,6 @@
+apiVersion: v2
+name: helm-universal-chart
+description: Universal chart for microservices deployment
+type: application
+version: 0.1.0 # Changed manualy then introducing breaking changes for the current format of Values-file 
+appVersion: "1.0.0" # Placeholder

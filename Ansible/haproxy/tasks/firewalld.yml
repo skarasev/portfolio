@@ -1,0 +1,42 @@
+---
+- name: Enable firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: Allow 22 ssh port
+  firewalld:
+    port: 22/tcp
+    permanent: true
+    state: enabled
+
+- name: Allow VRRP for keepalived
+  firewalld:
+    rich_rule: rule protocol value=vrrp accept
+    permanent: true
+    state: enabled
+
+- name: Allow other ports
+  firewalld:
+    port: '{{ item }}/tcp'
+    permanent: true
+    state: enabled
+  notify: Restart firewalld
+  with_items:
+    - 80
+    - 443
+    - 444
+    - 5432
+    - 8080
+    - 8200
+    - 8500
+    - 446
+    - 30446
+    - 447
+    - 30447
+    - 4443  
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
